@@ -15,28 +15,30 @@ datasource db {
 }
 
 model User{
-    id        string @id @default(uuid())
-    email     string
+    id        String    @id     @default(uuid())
+    email     String    @unique
     provider  Provider
     role      Role
-    streams    Stream[]
+    streams   Stream[]
     upvotes   Upvote[]
   }
 model Stream{
-    id        string @id @default(uuid())
-    type      StreamType
-    active    Boolean   @default(true)
-    upvotes   Upvote[]
-    userId    string
-    user      User      @relation(fields:[userId], refefences:[id])
+    id            String @id @default(uuid())
+    type          StreamType
+    url           String
+    extractedId   String
+    active        Boolean   @default(true)
+    upvotes       Upvote[]
+    userId        String
+    user          User      @relation(fields:[userId], references:[id])
   }
 
 model Upvote{
-    id      string   @id @default(uuid())
-    userId  string
-    streamId  string
-    user      User      @relation(fields:[userId], refefences:[id])
-    stream    Stream    @relation(fields:[streamId], refefences:[id])
+    id      String   @id @default(uuid())
+    userId  String
+    streamId  String
+    user      User      @relation(fields:[userId], references:[id])
+    stream    Stream    @relation(fields:[streamId], references:[id])
     @@unique([userId, streamId])
   }
 enum StreamType{
