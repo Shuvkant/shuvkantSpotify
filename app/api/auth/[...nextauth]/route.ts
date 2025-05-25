@@ -1,13 +1,13 @@
 import GoogleProvider from 'next-auth/providers/google'
 import NextAuth from 'next-auth'
-import { signIn, useSession, signOut } from 'next-auth/react'
+// import { signIn, useSession, signOut } from 'next-auth/react'
 import { prismaClient } from '@/app/lib/db'
 
 const handler = NextAuth({
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
     }),
   ],
   callbacks: {
@@ -15,12 +15,13 @@ const handler = NextAuth({
       if (!params.user.email) {
         return false
       }
-      console.log(params)
+      // console.log(params)
       try {
         await prismaClient.user.create({
           data: {
             email: params.user.email,
-            provider: 'Google'
+            provider: 'Google',
+            role: 'Streamer',
           },
         })
       } catch (error) {}
