@@ -1,4 +1,3 @@
-
 import { prismaClient } from '@/app/lib/db'
 import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
@@ -8,7 +7,7 @@ const UpvoteSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const session = getServerSession()
+  const session = await getServerSession()
 
   const user = await prismaClient.user.findFirst({
     where: {
@@ -27,16 +26,15 @@ export async function POST(req: NextRequest) {
     )
   }
 
- try {
-    const data = UpvoteSchema.parse(await req.json()) 
+  try {
+    const data = UpvoteSchema.parse(await req.json())
     await prismaClient.upvote.create({
-      data:{
-        userId:user.id,
-        streamId:data.streamId
-      }
+      data: {
+        userId: user.id,
+        streamId: data.streamId,
+      },
     })
   } catch (error) {
-    
     return NextResponse.json(
       {
         message: 'Error while upvoting',
@@ -45,5 +43,5 @@ export async function POST(req: NextRequest) {
         status: 403,
       }
     )
-  } 
+  }
 }
