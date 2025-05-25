@@ -1,0 +1,30 @@
+import {prismaClient} from "@app/lib/db";
+import {getServerSession} from "next-auth";
+import {Nextrequest, NextResponse} from "next/server"
+
+export async fucntion GET(req:Nextrequest){
+  const session=getServerSession();
+  const user=await prismaClient.user.findFirst({
+    where:{
+      email:session?.user?.email ??""
+    }
+  })
+  if(!user){
+    return NextResponse.json({
+      message:"Unauthenticated"
+    }, {
+        status:403
+      })
+  }
+
+  const streams=await prismaClient.stream.findMany({
+    where:{
+      userId:user.id
+    }
+  })
+
+  return NextResponse.json({
+    streams
+  })
+};
+
