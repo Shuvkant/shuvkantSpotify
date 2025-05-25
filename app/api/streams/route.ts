@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 var YT_REGEX =
   /^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com\/(?:watch\?(?!.*\blist=)(?:.*&)?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[?&]\S+)?$/
+// var YT_REGEX = /https:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})/
+
 const CreateStreamSchema = z.object({
   creatorId: z.string(),
   url: z.string(),
@@ -22,7 +24,7 @@ export async function POST(req: NextRequest) {
         }
       )
     }
-    const extractedId = data.url.split('?v=')[1]
+    const extractedId = isYt[1]
     const stream = await prismaClient.stream.create({
       data: {
         userId: data.creatorId,
