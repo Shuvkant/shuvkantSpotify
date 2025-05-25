@@ -1,9 +1,12 @@
 import { prismaClient } from '@/app/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-var YT_REGEX =
-  /^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com\/(?:watch\?(?!.*\blist=)(?:.*&)?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[?&]\S+)?$/
-// var YT_REGEX = /https:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})/
+//@ts-ignore
+import { GetVideoDetails } from 'youtube-search-api'
+
+// var YT_REGEX =
+//   /^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com\/(?:watch\?(?!.*\blist=)(?:.*&)?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[?&]\S+)?$/
+var YT_REGEX = /https:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})/
 
 const CreateStreamSchema = z.object({
   creatorId: z.string(),
@@ -25,12 +28,27 @@ export async function POST(req: NextRequest) {
       )
     }
     const extractedId = isYt[1]
+    const res = await GetVideoDetails(extractedId)
+    // console.log(res.title)
+    // console.log(res.thumbnail.thumbnails)
+    const thumbnails=res.thumbnail.thumbnails
+    thumbnails.sort((a:{width:number},b:{width:number})=>{a.width<b.width?-1:1})
+    const user=await prismaClient.user.findUnique({
+      where:{id:data.creatorId}
+    });
+    // To find the user before adding stream to the specified user
+    if(!user){
+      return NextResponse.json({error:"User not found"}, {status:400})
+    }
     const stream = await prismaClient.stream.create({
       data: {
         userId: data.creatorId,
         url: data.url,
         extractedId,
         type: 'Youtube',
+        title:res.title ?? "cant find video",
+        smallImg:(thumbnails.length > 1 ? thumbnails[thumbnails.length-2].url:thumbnails[thumbnails.length-1].url) ?? "https://media.istockphoto.com/id/968853036/photo/top-view-of-a-young-green-forest-in-spring-or-summer.jpg?s=612x612&w=0&k=20&c=hcvwY9NfJI86bMAGtBaUrQLqc0OqkaXHLHf2ZiI4DRs=",
+        bigImg: thumbnails[thumbnails.length-1].url ?? "https://media.istockphoto.com/id/1471370789/photo/a-beautiful-forest-in-spring.jpg?s=612x612&w=0&k=20&c=yjyc4EyVeNhNB_OcVFTWjbBrVd2EDQePnpKLn4CWIyM=",
       },
     })
     return NextResponse.json({
@@ -38,6 +56,7 @@ export async function POST(req: NextRequest) {
       id: stream.id,
     })
   } catch (error) {
+    console.log(error)
     return NextResponse.json(
       {
         message: 'Error while adding a stream',
