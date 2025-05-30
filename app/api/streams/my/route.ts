@@ -1,9 +1,9 @@
-import {prismaClient} from "@app/lib/db";
+import {prismaClient} from "@/app/lib/db";
 import {getServerSession} from "next-auth";
-import {Nextrequest, NextResponse} from "next/server"
+import {NextRequest, NextResponse} from "next/server"
 
-export async fucntion GET(req:Nextrequest){
-  const session=getServerSession();
+export async function GET(req:NextRequest){
+  const session=await getServerSession();
   const user=await prismaClient.user.findFirst({
     where:{
       email:session?.user?.email ??""
@@ -35,10 +35,11 @@ export async fucntion GET(req:Nextrequest){
   });
 
   return NextResponse.json({
-    streams:streams.map({_count ...rest})=>({
+    streams: streams.map(({ _count, ...rest }) => ({
       ...rest,
-      upvotes:_count.upvotes
+      upvotes: _count.upvotes,
+      haveUpvoted: rest.upvotes.length ? true : false
     }))
-  })
+  });
 };
 
