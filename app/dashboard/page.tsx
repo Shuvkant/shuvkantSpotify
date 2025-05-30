@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import axios from "axios"
+import {Appbar} from "./../components/Appbar.tsx"
 import {
   ChevronUp,
   ChevronDown,
@@ -23,7 +25,9 @@ interface Video {
   duration: string
   channel: string
   url: string
+  haveUpvoted:boolean
 }
+const REFRESH_INTERVAL_MS=10*1000;
 
 export default function MusicVotingApp() {
   const [youtubeUrl, setYoutubeUrl] = useState('')
@@ -31,43 +35,28 @@ export default function MusicVotingApp() {
   const [copied, setCopied] = useState(false)
 
   const [currentlyPlaying, setCurrentlyPlaying] = useState<Video>({
-    id: 'dQw4w9WgXcQ',
-    title: 'Rick Astley - Never Gonna Give You Up',
-    thumbnail: '/placeholder.svg?height=180&width=320',
-    votes: 0,
-    duration: '3:33',
-    channel: 'Rick Astley',
-    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    // id: 'dQw4w9WgXcQ',
+    // title: 'Rick Astley - Never Gonna Give You Up',
+    // thumbnail: '/placeholder.svg?height=180&width=320',
+    // votes: 0,
+    // duration: '3:33',
+    // channel: 'Rick Astley',
+    // url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   })
 
+  async function refreshStreams(){
+    const res=await axios.get(`/api/streams/my`)
+    console.log(res)
+  }
+
+  useEffect(() => {
+  refreshStreams();
+    const interval=setInterval(()=>{
+
+    },REFRESH_INTERVAL_MS)
+  }, [])
+  
   const [queue, setQueue] = useState<Video[]>([
-    {
-      id: 'fJ9rUzIMcZQ',
-      title: 'Queen - Bohemian Rhapsody',
-      thumbnail: '/placeholder.svg?height=180&width=320',
-      votes: 15,
-      duration: '5:55',
-      channel: 'Queen Official',
-      url: 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ',
-    },
-    {
-      id: 'kJQP7kiw5Fk',
-      title: 'Despacito - Luis Fonsi ft. Daddy Yankee',
-      thumbnail: '/placeholder.svg?height=180&width=320',
-      votes: 12,
-      duration: '4:42',
-      channel: 'Luis Fonsi',
-      url: 'https://www.youtube.com/watch?v=kJQP7kiw5Fk',
-    },
-    {
-      id: 'YQHsXMglC9A',
-      title: 'Adele - Hello',
-      thumbnail: '/placeholder.svg?height=180&width=320',
-      votes: 8,
-      duration: '6:07',
-      channel: 'Adele',
-      url: 'https://www.youtube.com/watch?v=YQHsXMglC9A',
-    },
     {
       id: 'CevxZvSJLk8',
       title: 'Katy Perry - Roar',
@@ -76,6 +65,7 @@ export default function MusicVotingApp() {
       duration: '3:43',
       channel: 'Katy Perry',
       url: 'https://www.youtube.com/watch?v=CevxZvSJLk8',
+      haveUpvoted:false
     },
   ])
 
@@ -111,16 +101,24 @@ export default function MusicVotingApp() {
     }
   }
 
-  const handleVote = (videoId: string, increment: number) => {
+  const handleVote = (videoId: string, isUpvote:boolean) => {
     setQueue((prev) =>
       prev
         .map((video) =>
           video.id === videoId
-            ? { ...video, votes: Math.max(0, video.votes + increment) }
+            ? { ...video, votes: isUpvote?video.upvotes+1:video.upvotes-1,
+            haveUpvoted:!video.haveUpvoted
+          }
             : video
         )
         .sort((a, b) => b.votes - a.votes)
     )
+    fetch(`api/stream/${isUpvote?"upvote":"downvote"}`,{
+      method:"POST",
+      body:JSON.stringify({
+        streamId:videoId
+      })
+    })
   }
 
   const handlePlayNext = (video: Video) => {
@@ -174,7 +172,7 @@ export default function MusicVotingApp() {
               onClick={handleShare}
               variant='outline'
               size='sm'
-              className='gap-2'
+              className='gap-2 text-foreground'
             >
               {copied ? (
                 <Check className='w-4 h-4' />
@@ -307,7 +305,7 @@ export default function MusicVotingApp() {
             </CardHeader>
             <CardContent className='p-3'>
               <div className='space-y-2'>
-                {queue.map((video, index) => (
+                {queue.map((video,index) => (
                   <div
                     key={video.id}
                     className='flex items-center gap-3 p-2 border rounded-md hover:bg-muted/50 transition-colors'
@@ -316,22 +314,22 @@ export default function MusicVotingApp() {
                       <Button
                         size='sm'
                         variant='ghost'
-                        onClick={() => handleVote(video.id, 1)}
+                        onClick={() => handleVote(video.id, video.haveUpvotedl ? false:true)}
                         className='h-5 w-5 p-0 hover:bg-green-100'
                       >
-                        <ChevronUp className='w-3 h-3 text-green-600' />
+                        {video.haveUpvoted?<ChevronDown className='w-3 h-3 text-red-600' />:<ChevronUp className='w-3 h-3 text-green-600' />}
                       </Button>
                       <span className='font-bold text-xs min-w-[1.5rem] text-center'>
                         {video.votes}
                       </span>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        onClick={() => handleVote(video.id, -1)}
-                        className='h-5 w-5 p-0 hover:bg-red-100'
-                      >
-                        <ChevronDown className='w-3 h-3 text-red-600' />
-                      </Button>
+                      {/* <Button */}
+                      {/*   size='sm' */}
+                      {/*   variant='ghost' */}
+                      {/*   onClick={() => handleVote(video.id, -1)} */}
+                      {/*   className='h-5 w-5 p-0 hover:bg-red-100' */}
+                      {/* > */}
+                        {/* <ChevronDown className='w-3 h-3 text-red-600' /> */}
+                      {/* </Button> */}
                     </div>
 
                     <img
