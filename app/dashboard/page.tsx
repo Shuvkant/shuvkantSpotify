@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import axios from "axios"
-import {Appbar} from "./../components/Appbar.tsx"
+import axios from 'axios'
+import { Appbar } from './../components/Appbar.tsx'
 import {
   ChevronUp,
   ChevronDown,
@@ -25,9 +25,9 @@ interface Video {
   duration: string
   channel: string
   url: string
-  haveUpvoted:boolean
+  haveUpvoted: boolean
 }
-const REFRESH_INTERVAL_MS=10*1000;
+const REFRESH_INTERVAL_MS = 10 * 1000
 
 export default function MusicVotingApp() {
   const [youtubeUrl, setYoutubeUrl] = useState('')
@@ -44,18 +44,16 @@ export default function MusicVotingApp() {
     // url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   })
 
-  async function refreshStreams(){
-    const res=await axios.get(`/api/streams/my`)
+  async function refreshStreams() {
+    const res = await axios.get(`/api/streams/my`)
     console.log(res)
   }
 
   useEffect(() => {
-  refreshStreams();
-    const interval=setInterval(()=>{
-
-    },REFRESH_INTERVAL_MS)
+    refreshStreams()
+    const interval = setInterval(() => {}, REFRESH_INTERVAL_MS)
   }, [])
-  
+
   const [queue, setQueue] = useState<Video[]>([
     {
       id: 'CevxZvSJLk8',
@@ -65,7 +63,7 @@ export default function MusicVotingApp() {
       duration: '3:43',
       channel: 'Katy Perry',
       url: 'https://www.youtube.com/watch?v=CevxZvSJLk8',
-      haveUpvoted:false
+      haveUpvoted: false,
     },
   ])
 
@@ -101,23 +99,25 @@ export default function MusicVotingApp() {
     }
   }
 
-  const handleVote = (videoId: string, isUpvote:boolean) => {
+  const handleVote = (videoId: string, isUpvote: boolean) => {
     setQueue((prev) =>
       prev
         .map((video) =>
           video.id === videoId
-            ? { ...video, votes: isUpvote?video.upvotes+1:video.upvotes-1,
-            haveUpvoted:!video.haveUpvoted
-          }
+            ? {
+                ...video,
+                votes: isUpvote ? video.upvotes + 1 : video.upvotes - 1,
+                haveUpvoted: !video.haveUpvoted,
+              }
             : video
         )
         .sort((a, b) => b.votes - a.votes)
     )
-    fetch(`api/stream/${isUpvote?"upvote":"downvote"}`,{
-      method:"POST",
-      body:JSON.stringify({
-        streamId:videoId
-      })
+    fetch(`api/stream/${isUpvote ? 'upvote' : 'downvote'}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        streamId: videoId,
+      }),
     })
   }
 
@@ -305,7 +305,7 @@ export default function MusicVotingApp() {
             </CardHeader>
             <CardContent className='p-3'>
               <div className='space-y-2'>
-                {queue.map((video,index) => (
+                {queue.map((video, index) => (
                   <div
                     key={video.id}
                     className='flex items-center gap-3 p-2 border rounded-md hover:bg-muted/50 transition-colors'
@@ -314,10 +314,16 @@ export default function MusicVotingApp() {
                       <Button
                         size='sm'
                         variant='ghost'
-                        onClick={() => handleVote(video.id, video.haveUpvotedl ? false:true)}
+                        onClick={() =>
+                          handleVote(video.id, video.haveUpvoted ? false : true)
+                        }
                         className='h-5 w-5 p-0 hover:bg-green-100'
                       >
-                        {video.haveUpvoted?<ChevronDown className='w-3 h-3 text-red-600' />:<ChevronUp className='w-3 h-3 text-green-600' />}
+                        {video.haveUpvoted ? (
+                          <ChevronDown className='w-3 h-3 text-red-600' />
+                        ) : (
+                          <ChevronUp className='w-3 h-3 text-green-600' />
+                        )}
                       </Button>
                       <span className='font-bold text-xs min-w-[1.5rem] text-center'>
                         {video.votes}
@@ -328,7 +334,7 @@ export default function MusicVotingApp() {
                       {/*   onClick={() => handleVote(video.id, -1)} */}
                       {/*   className='h-5 w-5 p-0 hover:bg-red-100' */}
                       {/* > */}
-                        {/* <ChevronDown className='w-3 h-3 text-red-600' /> */}
+                      {/* <ChevronDown className='w-3 h-3 text-red-600' /> */}
                       {/* </Button> */}
                     </div>
 
