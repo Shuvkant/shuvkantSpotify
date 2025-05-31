@@ -31,7 +31,11 @@ interface Video {
 }
 const REFRESH_INTERVAL_MS = 10 * 1000
 
-export default function StreamView() {
+export default function StreamView({
+  creatorId
+}:{
+    creatorId:string
+  }) {
   const [youtubeUrl, setYoutubeUrl] = useState('')
   const [previewVideo, setPreviewVideo] = useState<Video | null>(null)
   const [copied, setCopied] = useState(false)
@@ -48,7 +52,7 @@ export default function StreamView() {
   })
 
   async function refreshStreams() {
-    const res = await axios.get(`/api/streams/my`,{
+    const res = await axios.get(`/api/streams/?creatorId=${creatorId}`,{
       credentials:"include"
     });
     const json=await res.json();

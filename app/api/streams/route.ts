@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 //@ts-ignore
 import { GetVideoDetails } from 'youtube-search-api'
+import { YT_REGEX } from '@/app/lib/utils'
 
 // var YT_REGEX =
 //   /^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com\/(?:watch\?(?!.*\blist=)(?:.*&)?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[?&]\S+)?$/
-export const YT_REGEX = /https:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})/
+// export const YT_REGEX = /https:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})/
 
 const CreateStreamSchema = z.object({
   creatorId: z.string(),
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 400 })
     }
+    console.log(data.creatorId)
     const stream = await prismaClient.stream.create({
       data: {
         userId: data.creatorId,
@@ -60,8 +62,9 @@ export async function POST(req: NextRequest) {
       },
     })
     return NextResponse.json({
-      message: 'Added Stream',
-      id: stream.id,
+      ...stream,
+      hasUpvoted: false,
+      upvotes: 0,
     })
   } catch (error) {
     console.log(error)
@@ -78,12 +81,35 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const creatorId = req.nextUrl.searchParams.get('creatorId')
-  const streams = await prismaClient.stream.findMany({
-    where: {
-      userId: creatorId ?? '',
-    },
-  })
+  if(!creatorId){
+    return NextResponse.json({
+      message:"Error in creatorId"
+    }, {
+        status:411
+      })
+  }
+  const streams=await prismaClient.stream.findMany({
+    where:{
+      userId:creatorId
+    },include:{
+      _count:{
+        select:{
+          upvotes:true
+        }
+      },
+      upvotes:{
+        where:{
+          userId:user.id
+        }
+      }
+    }
+  });
+
   return NextResponse.json({
-    streams,
-  })
+    streams: streams.map(({ _count, ...rest }) => ({
+      ...rest,
+      upvotes: _count.upvotes,
+      haveUpvoted: rest.upvotes.length ? true : false
+    }))
+  });
 }
