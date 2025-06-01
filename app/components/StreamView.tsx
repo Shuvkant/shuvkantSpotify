@@ -42,12 +42,14 @@ export default function StreamView({
   const [loading, setLoading]=useState(false)
 
   const [currentlyPlaying, setCurrentlyPlaying] = useState<Video>({
-    // id: 'dQw4w9WgXcQ',
-    // title: 'Rick Astley - Never Gonna Give You Up',
-    // thumbnail: '/placeholder.svg?height=180&width=320',
-    // votes: 0,
-    // duration: '3:33',
-    // channel: 'Rick Astley',
+      id: 'bWFWeolDGcM',
+      title: 'I Built MCP Server for Smart Bulb with Claude',
+      thumbnail: '/placeholder.svg?height=180&width=320',
+      votes: 5,
+      duration: '3:43',
+      channel: 'Piyush Garg',
+      url: 'https://youtu.be/bWFWeolDGcM"',
+      haveUpvoted: false,
     // url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   })
 
@@ -67,13 +69,13 @@ export default function StreamView({
 
   const [queue, setQueue] = useState<Video[]>([
     {
-      id: 'CevxZvSJLk8',
-      title: 'Katy Perry - Roar',
+      id: 'bWFWeolDGcM',
+      title: 'I Built MCP Server for Smart Bulb with Claude',
       thumbnail: '/placeholder.svg?height=180&width=320',
       votes: 5,
       duration: '3:43',
-      channel: 'Katy Perry',
-      url: 'https://www.youtube.com/watch?v=CevxZvSJLk8',
+      channel: 'Piyush Garg',
+      url: 'https://youtu.be/bWFWeolDGcM"',
       haveUpvoted: false,
     },
   ])
@@ -113,7 +115,7 @@ export default function StreamView({
     const res=await fetch("/api/streams/",{
       method:"POST",
       body:JSON.stringify({
-        creatorId:"d3d6c33e-366d-4357-989b-dc6fc10b8b3b",
+        creatorId:"bbe83599-0762-4386-b930-2bccdb3f2537",
         url:youtubeUrl
       })
     });
@@ -187,6 +189,7 @@ export default function StreamView({
     <div className='min-h-screen bg-background p-4 dark'>
       <div className='max-w-6xl mx-auto space-y-4'>
         {/* Header */}
+        <Appbar/>
         <div className='text-center space-y-2'>
           <div className='flex items-center justify-center gap-4'>
             <h1 className='text-4xl font-bold text-foreground'>
@@ -363,7 +366,7 @@ export default function StreamView({
                     </div>
 
                     <img
-                      src={video.thumbnail || '/placeholder.svg'}
+                      src={video.bigImg || '/placeholder.svg'}
                       alt={video.title}
                       className='w-12 h-8 object-cover rounded'
                     />
@@ -376,25 +379,25 @@ export default function StreamView({
                         {video.channel}
                       </p>
                       <div className='flex items-center gap-2 mt-0.5'>
-                        <Badge
-                          variant='secondary'
-                          className='text-xs px-1 py-0 h-4'
-                        >
-                          {video.duration}
-                        </Badge>
+                        {/* <Badge */}
+                        {/*   variant='secondary' */}
+                        {/*   className='text-xs px-1 py-0 h-4' */}
+                        {/* > */}
+                        {/*   {video.duration} */}
+                        {/* </Badge> */}
                         <span className='text-xs text-muted-foreground'>
                           #{index + 1}
                         </span>
                       </div>
                     </div>
-
-                    <Button
-                      size='sm'
-                      onClick={() => handlePlayNext(video)}
-                      className='shrink-0 h-6 w-6 p-0'
-                    >
-                      <Play className='w-3 h-3' />
-                    </Button>
+                    {/*//Commenting the next button*/}
+                    {/* <Button */}
+                    {/*   size='sm' */}
+                    {/*   onClick={() => handlePlayNext(video)} */}
+                    {/*   className='shrink-0 h-8 w-10 p-0' */}
+                    {/* > */}
+                    {/*   <Play className='w-3 h-3' /> */}
+                    {/* </Button> */}
                   </div>
                 ))}
 
