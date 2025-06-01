@@ -1,5 +1,5 @@
 import StreamView from '@/app/components/StreamView'
-export default function creatorId ({
+export default function CreatorId ({
   params: { creatorId },
 }: {
   params: {

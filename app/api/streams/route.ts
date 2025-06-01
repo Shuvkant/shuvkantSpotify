@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
     const extractedId = isYt[1]
     const res = await GetVideoDetails(extractedId)
-    // console.log(res.title)
+    console.log(res)
     // console.log(res.thumbnail.thumbnails)
     const thumbnails = res.thumbnail.thumbnails
     thumbnails.sort((a: { width: number }, b: { width: number }) => {
@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
         url: data.url,
         extractedId,
         type: 'Youtube',
+        channel:res.channel,
         title: res.title ?? 'cant find video',
         smallImg:
           (thumbnails.length > 1
