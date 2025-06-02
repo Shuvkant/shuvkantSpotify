@@ -53,31 +53,33 @@ export default function StreamView({
     // url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   })
 
-  async function refreshStreams() {
+async function refreshStreams() {
+
     const res = await axios.get(`/api/streams/?creatorId=${creatorId}`,{
-      credentials:"include"
-    });
-    const json=await res.json();
-    setQueue(json.streams)
-    console.log(res)
-  }
+  // const res = await axios.get(`/api/streams/?creatorId=683d83dd-8682-4bbc-a093-082e3f9ae622`, {
+    withCredentials: true // ✅ correct axios field, not "credentials"
+  });
+  const json = res.data;
+  setQueue(json.streams);
+  console.log(res);
+}
 
   useEffect(() => {
     refreshStreams()
-    const interval = setInterval(() => {}, REFRESH_INTERVAL_MS)
+    const interval = setInterval(() => {refreshStreams()}, REFRESH_INTERVAL_MS)
   }, [])
 
   const [queue, setQueue] = useState<Video[]>([
-    {
-      id: 'bWFWeolDGcM',
-      title: 'I Built MCP Server for Smart Bulb with Claude',
-      thumbnail: '/placeholder.svg?height=180&width=320',
-      votes: 5,
-      duration: '3:43',
-      channel: 'Piyush Garg',
-      url: 'https://youtu.be/bWFWeolDGcM"',
-      haveUpvoted: false,
-    },
+    // {
+    //   id: 'bWFWeolDGcM',
+    //   title: 'I Built MCP Server for Smart Bulb with Claude',
+    //   thumbnail: '/placeholder.svg?height=180&width=320',
+    //   votes: 5,
+    //   duration: '3:43',
+    //   channel: 'Piyush Garg',
+    //   url: 'https://youtu.be/bWFWeolDGcM"',
+    //   haveUpvoted: false,
+    // },
   ])
 
   const extractVideoId = (url: string) => {
@@ -115,7 +117,7 @@ export default function StreamView({
     const res=await fetch("/api/streams/",{
       method:"POST",
       body:JSON.stringify({
-        creatorId:"bbe83599-0762-4386-b930-2bccdb3f2537",
+        creatorId:"683d83dd-8682-4bbc-a093-082e3f9ae622",
         url:youtubeUrl
       })
     });
@@ -275,7 +277,7 @@ export default function StreamView({
                 <iframe
                   width='100%'
                   height='100%'
-                  src={`https://www.youtube.com/embed/${currentlyPlaying.id}?autoplay=1`}
+                  src={`https://www.youtube.com/embed/${currentlyPlaying.extractedId}?autoplay=1`}
                   title={currentlyPlaying.title}
                   frameBorder='0'
                   allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
@@ -390,14 +392,14 @@ export default function StreamView({
                         </span>
                       </div>
                     </div>
-                    {/*//Commenting the next button*/}
-                    {/* <Button */}
-                    {/*   size='sm' */}
-                    {/*   onClick={() => handlePlayNext(video)} */}
-                    {/*   className='shrink-0 h-8 w-10 p-0' */}
-                    {/* > */}
-                    {/*   <Play className='w-3 h-3' /> */}
-                    {/* </Button> */}
+                    
+                    <Button
+                      size='sm'
+                      onClick={() => handlePlayNext(video)}
+                      className='shrink-0 h-8 w-10 p-0'
+                    >
+                      <Play className='w-3 h-3' />
+                    </Button>
                   </div>
                 ))}
 
