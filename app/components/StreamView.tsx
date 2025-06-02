@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -7,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import axios from 'axios'
-import { Appbar } from './../components/Appbar.tsx'
+// import { Appbar } from './../components/Appbar.tsx'
 import {
   ChevronUp,
   ChevronDown,
@@ -17,6 +16,7 @@ import {
   Share2,
   Check,
 } from 'lucide-react'
+import { Appbar } from './Appbar'
 
 interface Video {
   id: string
@@ -26,48 +26,46 @@ interface Video {
   duration: string
   channel: string
   url: string
-  isUpvote:boolean
+  isUpvote: boolean
   haveUpvoted: boolean
 }
 const REFRESH_INTERVAL_MS = 10 * 1000
 
-export default function StreamView({
-  creatorId
-}:{
-    creatorId:string
-  }) {
+export default function StreamView({ creatorId }: { creatorId: string }) {
   const [youtubeUrl, setYoutubeUrl] = useState('')
   const [previewVideo, setPreviewVideo] = useState<Video | null>(null)
   const [copied, setCopied] = useState(false)
-  const [loading, setLoading]=useState(false)
+  const [loading, setLoading] = useState(false)
 
   const [currentlyPlaying, setCurrentlyPlaying] = useState<Video>({
-      id: 'bWFWeolDGcM',
-      title: 'I Built MCP Server for Smart Bulb with Claude',
-      thumbnail: '/placeholder.svg?height=180&width=320',
-      votes: 5,
-      duration: '3:43',
-      channel: 'Piyush Garg',
-      url: 'https://youtu.be/bWFWeolDGcM"',
-      haveUpvoted: false,
+    id: 'bWFWeolDGcM',
+    title: 'I Built MCP Server for Smart Bulb with Claude',
+    thumbnail: '/placeholder.svg?height=180&width=320',
+    votes: 5,
+    duration: '3:43',
+    channel: 'Piyush Garg',
+    url: 'https://youtu.be/bWFWeolDGcM"',
+    haveUpvoted: false,
+    isUpvote: false,
     // url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   })
 
-async function refreshStreams() {
+  async function refreshStreams() {
+    const res = await axios.get(`/api/streams/?creatorId=${creatorId}`, {
+      // const res = await axios.get(`/api/streams/?creatorId=683d83dd-8682-4bbc-a093-082e3f9ae622`, {
+      withCredentials: true, // ✅ correct axios field, not "credentials"
+    })
+    const json = res.data
+    setQueue(json.streams)
+    console.log(res)
+  }
 
-    const res = await axios.get(`/api/streams/?creatorId=${creatorId}`,{
-  // const res = await axios.get(`/api/streams/?creatorId=683d83dd-8682-4bbc-a093-082e3f9ae622`, {
-    withCredentials: true // ✅ correct axios field, not "credentials"
-  });
-  const json = res.data;
-  setQueue(json.streams);
-  console.log(res);
-}
-
-  useEffect(() => {
-    refreshStreams()
-    const interval = setInterval(() => {refreshStreams()}, REFRESH_INTERVAL_MS)
-  }, [])
+  // useEffect(() => {
+  //   refreshStreams()
+  //   const interval = setInterval(() => {
+  //     refreshStreams()
+  //   }, REFRESH_INTERVAL_MS)
+  // }, [])
 
   const [queue, setQueue] = useState<Video[]>([
     // {
@@ -101,30 +99,31 @@ async function refreshStreams() {
         duration: '3:45',
         channel: 'Sample Channel',
         url: youtubeUrl,
+        isUpvote: false,
+        haveUpvoted: false,
       }
       setPreviewVideo(mockVideo)
     }
   }
 
-  const handleAddToQueue = async (e) => {
+  const handleAddToQueue = async () => {
     // if (previewVideo) {
     //   setQueue((prev) => [...prev, previewVideo])
     //   setPreviewVideo(null)
     //   setYoutubeUrl('')
     // }
-    e.preventDefault();
+    // e.preventDefault()
     setLoading(true)
-    const res=await fetch("/api/streams/",{
-      method:"POST",
-      body:JSON.stringify({
-        creatorId:"683d83dd-8682-4bbc-a093-082e3f9ae622",
-        url:youtubeUrl
-      })
-    });
+    const res = await fetch('/api/streams/', {
+      method: 'POST',
+      body: JSON.stringify({
+        creatorId: '8c248a40-54d6-4db0-b21e-45c5cf854773',
+        url: youtubeUrl,
+      }),
+    })
     setQueue([...queue, await res.json()])
     setYoutubeUrl('')
     setLoading(false)
-
   }
 
   const handleVote = (videoId: string, isUpvote: boolean) => {
@@ -134,7 +133,7 @@ async function refreshStreams() {
           video.id === videoId
             ? {
                 ...video,
-                votes: isUpvote ? video.upvotes + 1 : video.upvotes - 1,
+                votes: isUpvote ? video.votes + 1 : video.votes - 1,
                 haveUpvoted: !video.haveUpvoted,
               }
             : video
@@ -155,7 +154,7 @@ async function refreshStreams() {
   }
 
   const handleShare = async () => {
-    const shareUrl =`${window.location.hostname}/creatorId/${creatorId}`
+    const shareUrl = `${window.location.hostname}/creatorId/${creatorId}`
     const shareText =
       '🎵 Vote for the next song on my stream! Help me choose what to play next.'
 
@@ -191,7 +190,7 @@ async function refreshStreams() {
     <div className='min-h-screen bg-background p-4 dark'>
       <div className='max-w-6xl mx-auto space-y-4'>
         {/* Header */}
-        <Appbar/>
+        <Appbar />
         <div className='text-center space-y-2'>
           <div className='flex items-center justify-center gap-4'>
             <h1 className='text-4xl font-bold text-foreground'>
@@ -253,8 +252,12 @@ async function refreshStreams() {
                       </p>
                       <Badge variant='secondary'>{previewVideo.duration}</Badge>
                     </div>
-                    <Button disabled={loading} onClick={handleAddToQueue} className='self-start'>
-                      {loading ?"Loading":"Add to Queue"}
+                    <Button
+                      disabled={loading}
+                      onClick={handleAddToQueue}
+                      className='self-start'
+                    >
+                      {loading ? 'Loading' : 'Add to Queue'}
                     </Button>
                   </div>
                 </CardContent>
@@ -277,7 +280,9 @@ async function refreshStreams() {
                 <iframe
                   width='100%'
                   height='100%'
-                  src={`https://www.youtube.com/embed/${currentlyPlaying.extractedId}?autoplay=1`}
+                  src={`https://www.youtube.com/embed/${
+                    currentlyPlaying.extractedId || currentlyPlaying.id
+                  }?autoplay=1`}
                   title={currentlyPlaying.title}
                   frameBorder='0'
                   allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
@@ -392,7 +397,7 @@ async function refreshStreams() {
                         </span>
                       </div>
                     </div>
-                    
+
                     <Button
                       size='sm'
                       onClick={() => handlePlayNext(video)}
