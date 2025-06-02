@@ -28,6 +28,8 @@ interface Video {
   url: string
   isUpvote: boolean
   haveUpvoted: boolean
+  extractedId?: string // ✅ optional if it's not always present
+  bigImg?: string
 }
 const REFRESH_INTERVAL_MS = 10 * 1000
 

@@ -2,11 +2,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Music, Play, Headphones, Heart, Download } from 'lucide-react'
 import { Appbar } from './app/components/Appbar'
+import { Navbar } from './app/components/Navbar'
 
 export default function Component() {
   return (
     <div className='flex flex-col min-h-screen bg-slate-900 text-neutral-100'>
       {/* Header */}
+      {/* <Navbar /> */}
       <Appbar />
       <header className='px-6 h-16 flex items-center border-b border-slate-800/50 backdrop-blur-sm'>
         <div className='flex items-center'>
